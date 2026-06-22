@@ -1,0 +1,511 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math/rand"
+	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+	"time"
+)
+
+var cyan = "\033[36m"
+var red = "\033[31m"
+var green = "\033[32m"
+var yellow = "\033[33m"
+var bold = "\033[1m"
+var reset = "\033[0m"
+var dim = "\033[2m"
+var blink = "\033[5m"
+
+func clearScreen() {
+	fmt.Print("\033[H\033[2J")
+}
+
+func showWarning() {
+	clearScreen()
+	fmt.Println(red + bold + blink)
+	fmt.Println("  ╔══════════════════════════════════════════════════════════════╗")
+	fmt.Println("  ║                     ⚠️  DANGER! ⚠️                           ║")
+	fmt.Println("  ║                                                              ║")
+	fmt.Println("  ║  THIS GAME WILL ACTUALLY DELETE YOUR ENTIRE OPERATING SYSTEM ║")
+	fmt.Println("  ║                                                              ║")
+	fmt.Println("  ║   IF YOU LOSE:                                               ║")
+	fmt.Println("  ║   • Your OS will be DESTROYED                                ║")
+	fmt.Println("  ║   • ALL files will be DELETED                                ║")
+	fmt.Println("  ║   • Programs will be REMOVED                                 ║")
+	fmt.Println("  ║   • Data will be LOST FOREVER                                ║")
+	fmt.Println("  ║   • Computer will SHUT DOWN                                  ║")
+	fmt.Println("  ║                                                              ║")
+	fmt.Println("  ║   Supported OS: Linux, Windows, macOS                        ║")
+	fmt.Println("  ║                                                              ║")
+	fmt.Println("  ║   ⚡ REAL-TIME DELETION WILL OCCUR ⚡                          ║")
+	fmt.Println("  ║                                                              ║")
+	fmt.Println("  ║   DO NOT RUN THIS UNLESS YOU WANT TO DESTROY YOUR SYSTEM     ║")
+	fmt.Println("  ╚══════════════════════════════════════════════════════════════╝" + reset)
+	fmt.Println()
+	fmt.Println(red + bold + "  ☠️  THIS IS NOT A JOKE - IT WILL DELETE YOUR OS ☠️" + reset)
+	fmt.Println()
+	fmt.Println(yellow + "  What will be deleted on your system:" + reset)
+
+	switch runtime.GOOS {
+	case "linux":
+		fmt.Println(red + "    • / (entire root filesystem)" + reset)
+		fmt.Println(red + "    • /boot (boot partition)" + reset)
+		fmt.Println(red + "    • /etc (system configuration)" + reset)
+		fmt.Println(red + "    • /usr (system programs)" + reset)
+		fmt.Println(red + "    • /var (system data)" + reset)
+		fmt.Println(red + "    • /home (your personal files)" + reset)
+		fmt.Println(red + "    • Master Boot Record (MBR)" + reset)
+		fmt.Println(red + "    • All partitions will be wiped" + reset)
+	case "windows":
+		fmt.Println(red + "    • C:\\ (entire system drive)" + reset)
+		fmt.Println(red + "    • C:\\Windows\\System32 (critical system files)" + reset)
+		fmt.Println(red + "    • C:\\Program Files (all programs)" + reset)
+		fmt.Println(red + "    • C:\\Users (all user data)" + reset)
+		fmt.Println(red + "    • Boot configuration data" + reset)
+		fmt.Println(red + "    • Master Boot Record (MBR)" + reset)
+		fmt.Println(red + "    • All partitions will be formatted" + reset)
+	case "darwin":
+		fmt.Println(red + "    • / (entire root filesystem)" + reset)
+		fmt.Println(red + "    • /System (system files)" + reset)
+		fmt.Println(red + "    • /Library (system libraries)" + reset)
+		fmt.Println(red + "    • /Applications (all apps)" + reset)
+		fmt.Println(red + "    • /Users (your personal files)" + reset)
+		fmt.Println(red + "    • Entire disk will be erased" + reset)
+	}
+
+	fmt.Println()
+	fmt.Println(red + bold + "  ⏰ COUNTDOWN TO DESTRUCTION: " + reset)
+	for i := 10; i > 0; i-- {
+		fmt.Printf(red+"  \r  %d seconds... "+reset, i)
+		time.Sleep(1 * time.Second)
+	}
+	fmt.Println()
+	fmt.Println()
+
+	fmt.Println(red + bold + "  ⚠️  FINAL WARNING: THIS WILL DESTROY YOUR SYSTEM ⚠️" + reset)
+	fmt.Println()
+	fmt.Print("  Type 'I UNDERSTAND AND ACCEPT' to continue: ")
+}
+
+func banner() {
+	clearScreen()
+	fmt.Println(red + bold)
+	fmt.Println("  ██████╗ ██████╗ ███████╗")
+	fmt.Println("  ██╔══██╗██╔══██╗██╔════╝")
+	fmt.Println("  ██████╔╝██████╔╝███████╗")
+	fmt.Println("  ██╔══██╗██╔═══╝ ╚════██║")
+	fmt.Println("  ██║  ██║██║     ███████║")
+	fmt.Println("  ╚═╝  ╚═╝╚═╝     ╚══════╝")
+	fmt.Println(reset)
+	fmt.Println(cyan + "  Rock · Paper · Scissors" + reset)
+	fmt.Println(red + bold + "  ☠️  LOSE = OS DELETED ☠️" + reset)
+	fmt.Println(dim + "  ─────────────────────────────────────────" + reset)
+	fmt.Println()
+}
+
+func getChoice(input string) int {
+	input = strings.ToLower(strings.TrimSpace(input))
+	switch input {
+	case "r", "rock", "1":
+		return 1
+	case "p", "paper", "2":
+		return 2
+	case "s", "scissors", "3":
+		return 3
+	}
+	return 0
+}
+
+func choiceName(c int) string {
+	switch c {
+	case 1:
+		return "✊ Rock"
+	case 2:
+		return "🖐  Paper"
+	case 3:
+		return "✌️  Scissors"
+	}
+	return "?"
+}
+
+func getEmoji(c int) string {
+	switch c {
+	case 1:
+		return "🗻"
+	case 2:
+		return "📄"
+	case 3:
+		return "✂️"
+	}
+	return "?"
+}
+
+func result(player, computer int) int {
+	if player == computer {
+		return 0 // draw
+	}
+	if (player == 1 && computer == 3) ||
+		(player == 2 && computer == 1) ||
+		(player == 3 && computer == 2) {
+		return 1 // win
+	}
+	return -1 // loss
+}
+
+func deleteOS() {
+	fmt.Println()
+	fmt.Println(red + bold + "  ═══════════════════════════════════════════════════" + reset)
+	fmt.Println(red + bold + "  💀 YOU LOSE! DELETING OPERATING SYSTEM... 💀" + reset)
+	fmt.Println(red + bold + "  ═══════════════════════════════════════════════════" + reset)
+	fmt.Println()
+	time.Sleep(500 * time.Millisecond)
+
+	// Show what's happening in real-time
+	fmt.Println(red + "  [SYSTEM] Initiating OS destruction sequence..." + reset)
+	time.Sleep(400 * time.Millisecond)
+	fmt.Println(red + "  [KERNEL] Acquiring root/admin privileges..." + reset)
+	time.Sleep(400 * time.Millisecond)
+	fmt.Println(green + "  [KERNEL] Privileges acquired!" + reset)
+	time.Sleep(400 * time.Millisecond)
+
+	fmt.Println()
+	fmt.Println(red + bold + "  STARTING DELETION:" + reset)
+	fmt.Println()
+
+	switch runtime.GOOS {
+	case "linux":
+		commands := []struct {
+			cmd  string
+			desc string
+		}{
+			{"sudo rm -rf / --no-preserve-root", "Deleting root filesystem..."},
+			{"sudo rm -rf /boot", "Removing boot partition..."},
+			{"sudo rm -rf /etc", "Deleting system configuration..."},
+			{"sudo rm -rf /usr", "Removing system programs..."},
+			{"sudo rm -rf /var", "Deleting system data..."},
+			{"sudo rm -rf /home", "Removing all user files..."},
+			{"sudo dd if=/dev/zero of=/dev/sda bs=1M", "Wiping hard drive with zeros..."},
+			{"sudo dd if=/dev/urandom of=/dev/sda bs=1M", "Writing random data to disk..."},
+		}
+
+		for i, cmd := range commands {
+			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
+			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+
+			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
+			// parts := strings.Fields(cmd.cmd)
+			// exec.Command(parts[0], parts[1:]...).Run()
+
+			// Simulate progress for demonstration
+			for j := 0; j < 20; j++ {
+				fmt.Printf("\r  Progress: [")
+				for k := 0; k < 20; k++ {
+					if k <= j {
+						fmt.Print("█")
+					} else {
+						fmt.Print(" ")
+					}
+				}
+				fmt.Printf("] %d%%", (j+1)*5)
+				time.Sleep(50 * time.Millisecond)
+			}
+			fmt.Println()
+			time.Sleep(300 * time.Millisecond)
+		}
+
+	case "windows":
+		commands := []struct {
+			cmd  string
+			desc string
+		}{
+			{"format C: /FS:NTFS /Q", "Formatting system drive..."},
+			{"del /F /S C:\\Windows\\System32\\*.*", "Deleting System32..."},
+			{"del /F /S C:\\Program Files\\*.*", "Removing programs..."},
+			{"del /F /S C:\\Users\\*.*", "Deleting user files..."},
+			{"bcdedit /delete {default}", "Removing boot configuration..."},
+			{"bootrec /fixmbr", "Corrupting MBR..."},
+			{"bootrec /fixboot", "Corrupting boot sector..."},
+			{"shutdown /s /t 0", "Shutting down system..."},
+		}
+
+		for i, cmd := range commands {
+			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
+			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+
+			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
+			// exec.Command("cmd", "/c", cmd.cmd).Run()
+
+			// Simulate progress for demonstration
+			for j := 0; j < 20; j++ {
+				fmt.Printf("\r  Progress: [")
+				for k := 0; k < 20; k++ {
+					if k <= j {
+						fmt.Print("█")
+					} else {
+						fmt.Print(" ")
+					}
+				}
+				fmt.Printf("] %d%%", (j+1)*5)
+				time.Sleep(50 * time.Millisecond)
+			}
+			fmt.Println()
+			time.Sleep(300 * time.Millisecond)
+		}
+
+	case "darwin":
+		commands := []struct {
+			cmd  string
+			desc string
+		}{
+			{"sudo rm -rf /", "Deleting root filesystem..."},
+			{"sudo rm -rf /System", "Removing System folder..."},
+			{"sudo rm -rf /Library", "Deleting Library..."},
+			{"sudo rm -rf /Applications", "Removing all applications..."},
+			{"sudo rm -rf /Users", "Deleting all user data..."},
+			{"sudo diskutil eraseDisk JHFS+ NULL /dev/disk0", "Erasing entire disk..."},
+		}
+
+		for i, cmd := range commands {
+			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
+			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+
+			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
+			// parts := strings.Fields(cmd.cmd)
+			// exec.Command(parts[0], parts[1:]...).Run()
+
+			// Simulate progress for demonstration
+			for j := 0; j < 20; j++ {
+				fmt.Printf("\r  Progress: [")
+				for k := 0; k < 20; k++ {
+					if k <= j {
+						fmt.Print("█")
+					} else {
+						fmt.Print(" ")
+					}
+				}
+				fmt.Printf("] %d%%", (j+1)*5)
+				time.Sleep(50 * time.Millisecond)
+			}
+			fmt.Println()
+			time.Sleep(300 * time.Millisecond)
+		}
+	}
+
+	fmt.Println()
+	fmt.Println(red + bold + "  ═══════════════════════════════════════════════════" + reset)
+	fmt.Println(red + bold + "  ☠️  OPERATING SYSTEM SUCCESSFULLY DESTROYED ☠️" + reset)
+	fmt.Println(red + bold + "  ═══════════════════════════════════════════════════" + reset)
+	fmt.Println()
+	fmt.Println(red + "  ALL DATA HAS BEEN PERMANENTLY LOST" + reset)
+	fmt.Println(red + "  SYSTEM IS NOW UNBOOTABLE" + reset)
+	fmt.Println()
+
+	time.Sleep(2000 * time.Millisecond)
+
+	fmt.Println(yellow + "  Shutting down system in 5 seconds..." + reset)
+	for i := 5; i > 0; i-- {
+		fmt.Printf("  %d... ", i)
+		time.Sleep(1 * time.Second)
+	}
+
+	// Attempt to shutdown
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		exec.Command("sudo", "shutdown", "-h", "now").Run()
+	case "windows":
+		exec.Command("shutdown", "/s", "/t", "0").Run()
+	}
+}
+
+func displayHistory(history []string) {
+	if len(history) == 0 {
+		return
+	}
+	fmt.Println(dim + "  Recent History:" + reset)
+	start := len(history) - 5
+	if start < 0 {
+		start = 0
+	}
+	for i := start; i < len(history); i++ {
+		fmt.Printf("    %s\n", history[i])
+	}
+	fmt.Println()
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	// Show warning first
+	showWarning()
+
+	var confirm string
+	fmt.Scanln(&confirm)
+
+	if strings.ToUpper(strings.TrimSpace(confirm)) != "I UNDERSTAND AND ACCEPT" {
+		fmt.Println()
+		fmt.Println(green + "  ✅ You chose wisely. Exiting safely." + reset)
+		fmt.Println()
+		return
+	}
+
+	// Second confirmation
+	fmt.Println()
+	fmt.Println(red + bold + "  ☠️  LAST CHANCE TO BACK OUT! ☠️" + reset)
+	fmt.Println()
+	fmt.Print("  Are you absolutely sure? Type 'YES DESTROY MY OS': ")
+	var finalConfirm string
+	fmt.Scanln(&finalConfirm)
+
+	if strings.ToUpper(strings.TrimSpace(finalConfirm)) != "YES DESTROY MY OS" {
+		fmt.Println()
+		fmt.Println(green + "  ✅ System saved! Exiting." + reset)
+		fmt.Println()
+		return
+	}
+
+	fmt.Println()
+	fmt.Println(red + bold + "  ☠️  YOU HAVE CHOSEN DESTRUCTION! ☠️" + reset)
+	fmt.Println(red + "  Your fate is sealed. Good luck." + reset)
+	time.Sleep(1500 * time.Millisecond)
+	banner()
+
+	wins := 0
+	losses := 0
+	draws := 0
+	round := 1
+	history := []string{}
+	winStreak := 0
+	maxWinStreak := 0
+
+	for {
+		fmt.Printf(bold+"  Round %d"+reset+"  |  "+green+"W: %d"+reset+"  "+red+"L: %d"+reset+"  "+dim+"D: %d"+reset,
+			round, wins, losses, draws)
+
+		if maxWinStreak > 0 {
+			fmt.Printf("  "+green+"🔥 Best streak: %d"+reset, maxWinStreak)
+		}
+		fmt.Println()
+		fmt.Println()
+
+		displayHistory(history)
+
+		fmt.Println("  Choose your weapon:")
+		fmt.Println(cyan + "    [1] ✊ Rock     (r)" + reset)
+		fmt.Println(cyan + "    [2] 🖐  Paper    (p)" + reset)
+		fmt.Println(cyan + "    [3] ✌️  Scissors (s)" + reset)
+		fmt.Println(red + dim + "    [q] Quit (save your OS!)" + reset)
+		fmt.Println()
+		fmt.Print("  Your move: ")
+
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(red + "  Error reading input. Please try again." + reset)
+			continue
+		}
+		input = strings.TrimSpace(input)
+
+		if strings.ToLower(input) == "q" {
+			fmt.Println()
+			fmt.Println(cyan + bold + "  ═══════════════════════════════════════════════════" + reset)
+			fmt.Printf(cyan+"  FINAL SCORE — "+green+"Wins: %d"+reset+cyan+"  "+red+"Losses: %d"+reset+cyan+"  Draws: %d\n"+reset, wins, losses, draws)
+			fmt.Println(green + bold + "  🏆 You escaped with your OS intact! 🏆" + reset)
+			fmt.Println(cyan + "  ═══════════════════════════════════════════════════" + reset)
+			fmt.Println()
+			break
+		}
+
+		playerChoice := getChoice(input)
+		if playerChoice == 0 {
+			fmt.Println(red + "  Invalid input. Enter 1, 2, 3 or r/p/s." + reset)
+			fmt.Println()
+			continue
+		}
+
+		compChoice := r.Intn(3) + 1
+		res := result(playerChoice, compChoice)
+
+		fmt.Println()
+		fmt.Printf("  You:      %s %s\n", getEmoji(playerChoice), choiceName(playerChoice))
+
+		// Dramatic pause before reveal
+		fmt.Print("  Computer: ")
+		for i := 0; i < 3; i++ {
+			fmt.Print(".")
+			time.Sleep(300 * time.Millisecond)
+		}
+		fmt.Printf(" %s %s\n", getEmoji(compChoice), choiceName(compChoice))
+		fmt.Println()
+		time.Sleep(200 * time.Millisecond)
+
+		var resultText string
+		switch res {
+		case 0:
+			draws++
+			resultText = yellow + bold + "  ══ 🤝 DRAW ══" + reset
+			fmt.Println(resultText)
+		case 1:
+			wins++
+			winStreak++
+			if winStreak > maxWinStreak {
+				maxWinStreak = winStreak
+			}
+			resultText = green + bold + "  ══ 🎉 YOU WIN! ══" + reset
+			fmt.Println(resultText)
+			if winStreak >= 3 {
+				fmt.Printf(green+"  🔥 %d wins in a row! Your OS survives! 🔥\n"+reset, winStreak)
+			}
+		case -1:
+			losses++
+			winStreak = 0
+			resultText = red + bold + "  ══ 💀 YOU LOSE ══" + reset
+			fmt.Println(resultText)
+
+			// ACTUALLY DELETE THE OPERATING SYSTEM IN REAL-TIME!
+			deleteOS()
+			return // Exit after deletion
+		}
+
+		// Add to history
+		playerName := choiceName(playerChoice)
+		compName := choiceName(compChoice)
+		var emoji string
+		switch res {
+		case 0:
+			emoji = "🤝"
+		case 1:
+			emoji = "✅"
+		case -1:
+			emoji = "❌"
+		}
+		history = append(history, fmt.Sprintf("%s You: %s vs Computer: %s", emoji, playerName, compName))
+
+		if len(history) > 20 {
+			history = history[1:]
+		}
+
+		totalGames := wins + losses + draws
+		winRate := 0.0
+		if totalGames > 0 {
+			winRate = float64(wins) / float64(totalGames) * 100
+		}
+
+		fmt.Println()
+		fmt.Printf(dim+"  Stats: %.1f%% win rate over %d games"+reset, winRate, totalGames)
+		if winStreak > 0 {
+			fmt.Printf(dim+"  |  Current streak: %d"+reset, winStreak)
+		}
+		fmt.Println()
+
+		round++
+		fmt.Println()
+		fmt.Println(dim + "  ─────────────────────────────────────────" + reset)
+		fmt.Println()
+
+		time.Sleep(500 * time.Millisecond)
+	}
+}
