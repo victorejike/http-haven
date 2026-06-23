@@ -1,38 +1,58 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
 	"net/http"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/Get" {
-		http.Error(w, "Page Not Found!", http.StatusNotFound)
+func HomePage(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "Page Not Found", http.StatusNotFound)
 		return
 	}
 
-	json := ` {"message": "User Created"}`
+	if r.Method != http.MethodPost {
+		http.Error(w, "Request status not allowed Request", http.StatusMethodNotAllowed)
+		return
+	}
 
-	w.Header().Set("content-type", "application/json")
+	home, err := template.ParseFiles("Homepage/homepage.html")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	w.Write([]byte(json))
+	home.Execute(w, nil)
 
 }
 
 func AboutPage(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/AboutPage" {
-		http.Error(w, "AboutPage Not found", http.StatusNotFound)
+		http.Error(w, "404 Page Not Found!", http.StatusNotFound)
 		return
 	}
 
-	w.Write([]byte("AboutPage"))
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	code, err := template.ParseFiles("templates/index.html")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	code.Execute(w, nil)
+
 }
 
 func main() {
-
-	http.HandleFunc("/Get", HomeHandler)
+	http.HandleFunc("/", HomePage)
 	http.HandleFunc("/AboutPage", AboutPage)
 
-	println("server is now live on port http://:8080")
+	println("server is starting now !!!")
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
