@@ -5,33 +5,36 @@ import (
 	"net/http"
 )
 
-func HelloHandler(w http.ResponseWriter, r *http.Request) {
+func HelloHandle(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/hello" {
-		http.Error(w, "404 Not Found", http.StatusNotFound)
+		http.Error(w, "404 Page Not Found", http.StatusNotFound)
 		return
 	}
 
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	name := r.URL.Query().Get("name")
 
 	if name == "" {
-		name = "Guest"
+		name = "Gust"
 	}
 
-	fmt.Fprintf(w, "Hello, %s!", name)
+	fmt.Fprintf(w, "Hello, %s!\n", name)
+
 }
 
 func main() {
-	http.HandleFunc("/", HelloHandler)
+	http.HandleFunc("/hello", HelloHandle)
 
-	fmt.Println("Server running on :8080")
+	println("server is starting up now ")
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		panic(err)
 	}
 }
+
+//
