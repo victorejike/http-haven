@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Web</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f3f5f7;
+            color: #17202a;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(960px, 100%);
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #52606d;
+        }
+
+        main {
+            display: grid;
+            gap: 24px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        label,
+        legend {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            border: 1px solid #bcccdc;
+            border-radius: 6px;
+            color: #17202a;
+            font: inherit;
+            line-height: 1.5;
+            padding: 12px;
+        }
+
+        textarea:focus {
+            border-color: #0b7285;
+            outline: 3px solid #c5f6fa;
+        }
+
+        fieldset {
+            border: 0;
+            margin-bottom: 20px;
+        }
+
+        .banners {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .banner-option {
+            align-items: center;
+            border: 1px solid #bcccdc;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 14px;
+        }
+
+        .banner-option:has(input:checked) {
+            background: #e6fcf5;
+            border-color: #087f5b;
+        }
+
+        .banner-link {
+            color: #17202a;
+            text-decoration: none;
+        }
+
+        .banner-link:hover {
+            color: #087f5b;
+            text-decoration: underline;
+        }
+
+        button {
+            background: #0b7285;
+            border: 0;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+            min-height: 44px;
+            padding: 0 18px;
+        }
+
+        button:hover {
+            background: #095c6b;
+        }
+
+        .error {
+            background: #fff5f5;
+            border: 1px solid #ffc9c9;
+            border-radius: 6px;
+            color: #9b1c1c;
+            padding: 14px;
+        }
+
+        .result-header {
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .result-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .ascii-result {
+            background: #111827;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            line-height: 1.25;
+            max-height: 560px;
+            overflow: auto;
+            padding: 16px;
+            white-space: pre;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .banners {
+                display: grid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header>
+            <h1>ASCII Art Web</h1>
+            <p class="subtitle">Convert plain text with the standard, shadow, or thinkertoy banner.</p>
+        </header>
+
+        <main>
+            <section class="panel">
+                <form action="/ascii-art" method="POST">
+                    <div class="field">
+                        <label for="text">Text</label>
+                        <textarea id="text" name="text" required>{{.Input}}</textarea>
+                    </div>
+
+                    <fieldset>
+                        <legend>Banner</legend>
+                        <div class="banners">
+                            <label class="banner-option">
+                                <input type="radio" name="banner" value="standard" {{if eq .Banner "standard"}}checked{{else if not .Banner}}checked{{end}}>
+                                <a class="banner-link" href="/?banner=standard">Standard</a>
+                            </label>
+                            <label class="banner-option">
+                                <input type="radio" name="banner" value="shadow" {{if eq .Banner "shadow"}}checked{{end}}>
+                                <a class="banner-link" href="/?banner=shadow">Shadow</a>
+                            </label>
+                            <label class="banner-option">
+                                <input type="radio" name="banner" value="thinkertoy" {{if eq .Banner "thinkertoy"}}checked{{end}}>
+                                <a class="banner-link" href="/?banner=thinkertoy">Thinkertoy</a>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit">Generate</button>
+                </form>
+            </section>
+
+            {{if .Error}}
+            <div class="error" role="alert">{{.Error}}</div>
+            {{end}}
+
+            {{if .HasResult}}
+            <section class="panel" aria-labelledby="result-title">
+                <div class="result-header">
+                    <h2 id="result-title">Generated ASCII Art</h2>
+                    <span>{{.Banner}}</span>
+                </div>
+                <pre class="ascii-result">{{.Result}}</pre>
+            </section>
+            {{end}}
+        </main>
+    </div>
+</body>
+</html>
